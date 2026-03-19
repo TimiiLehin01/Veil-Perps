@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #08090A;
+    color: #E8E6E1;
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: #0E1012; }
+  ::-webkit-scrollbar-thumb { background: #2A2F36; border-radius: 2px; }
+  ::selection { background: rgba(139, 92, 246, 0.3); color: #E8E6E1; }
+}
+
+@layer components {
+  .panel { @apply bg-panel border border-border rounded-lg; }
+  .btn-primary { @apply bg-emerald-500 hover:bg-emerald-400 text-void font-display px-4 py-2.5 rounded-md transition-all duration-150 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed; }
+  .btn-danger { @apply bg-crimson-500 hover:bg-crimson-400 text-white font-display px-4 py-2.5 rounded-md transition-all duration-150 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed; }
+  .input-field { @apply bg-surface border border-border rounded-md px-3 py-2.5 text-ivory placeholder-dim font-mono text-sm focus:outline-none focus:border-arcium-500 focus:ring-1 focus:ring-arcium-500/30 transition-all duration-150 w-full; }
+  .tag-long { @apply text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded text-xs font-mono; }
+  .tag-short { @apply text-crimson-400 bg-crimson-400/10 border border-crimson-400/20 px-2 py-0.5 rounded text-xs font-mono; }
+  .arcium-badge { @apply text-arcium-400 bg-arcium-500/10 border border-arcium-500/20 px-2 py-0.5 rounded text-xs font-mono; }
+}
+
+@layer utilities {
+  .text-positive { color: #34D399; }
+  .text-negative { color: #F87171; }
+  .glow-arcium { box-shadow: 0 0 20px rgba(139, 92, 246, 0.15), 0 0 40px rgba(139, 92, 246, 0.05); }
+  .animate-fade-in { animation: fadeIn 0.35s ease forwards; }
+  .animate-slide-up { animation: slideUp 0.35s ease forwards; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .skeleton { background: linear-gradient(90deg, #1E2328 25%, #2A2F36 50%, #1E2328 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+}
