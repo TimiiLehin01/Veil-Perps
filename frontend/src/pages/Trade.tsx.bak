@@ -1,0 +1,169 @@
+import { useEffect, useRef } from 'react'
+import { padHex } from 'viem'
+import { PriceChart } from '@/components/Chart/PriceChart'
+import { FundingRateBar } from '@/components/Chart/FundingRateBar'
+import { OrderForm } from '@/components/TradingPanel/OrderForm'
+import { OpenPositions } from '@/components/Portfolio/OpenPositions'
+import { ProofStatus } from '@/components/Privacy/ProofStatus'
+import { useTradingStore } from '@/store/tradingStore'
+import { useMarketTickers, usePriceData } from '@/hooks/usePriceData'
+import { useLoadPositions } from '@/hooks/usePosition'
+import { ALL_MARKETS } from '@/pages/Markets'
+
+function LivePriceSync({ tickers }: { tickers: any[] }) {
+  const selectedMarket = useTradingStore((s) => s.selectedMarket)
+  const setSelectedMarket = useTradingStore((s) => s.setSelectedMarket)
+  const markets = useTradingStore((s) => s.markets)
+
+  useEffect(() => {
+    if (!selectedMarket || tickers.length === 0) return
+    const idx = markets.findIndex(m => m.symbol === selectedMarket.symbol)
+    if (idx === -1) return
+    const ticker = tickers[idx]
+    if (ticker && ticker.price > 0 && ticker.price !== selectedMarket.price) {
+      setSelectedMarket({ ...selectedMarket, price: ticker.price, priceChange24h: ticker.changePercent24h })
+    }
+  }, [tickers])
+
+  return null
+}
+
+function MarketTickerStrip() {
+  const tickers = useMarketTickers()
+  const setSelectedMarket = useTradingStore((s) => s.setSelectedMarket)
+  const selectedMarket = useTradingStore((s) => s.selectedMarket)
+  const stripRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll the strip continuously
+  useEffect(() => {
+    const el = stripRef.current
+    let frame: number
+    let pos = 0
+    const speed = 0.4
+
+    const animate = () => {
+      pos += speed
+      if (pos >= el.scrollWidth / 2) pos = 0
+      el.scrollLeft = pos
+      frame = requestAnimationFrame(animate)
+    }
+
+    frame = requestAnimationFrame(animate)
+
+    // Pause on hover
+    const pause = () => cancelAnimationFrame(frame)
+    const resume = () => { frame = requestAnimationFrame(animate) }
+    el.addEventListener("mouseenter", pause)
+    el.addEventListener("mouseleave", resume)
+
+    return () => {
+      cancelAnimationFrame(frame)
+      el.removeEventListener("mouseenter", pause)
+      el.removeEventListener("mouseleave", resume)
+    }
+  }, [tickers.length])
+
+  // Duplicate markets for seamless loop
+  const items = [...ALL_MARKETS, ...ALL_MARKETS]
+
+  return (
+    <div
+      ref={stripRef}
+      className="flex items-center gap-1 px-3 py-2 border-b border-border bg-surface flex-shrink-0 overflow-x-hidden"
+      style={{ scrollbarWidth: "none" }}
+    >
+      {items.map((m, i) => {
+        const ticker = tickers[i % ALL_MARKETS.length]
+        const isSelected = selectedMarket?.symbol === m.symbol
+        const isPositive = (ticker?.changePercent24h ?? 0) >= 0
+        return (
+          <button
+            key={i}
+            onClick={() => setSelectedMarket({
+              ...m,
+              price: ticker?.price ?? 0,
+              priceChange24h: ticker?.changePercent24h ?? 0,
+              fundingRate: 0.0001,
+              openInterestLong: 0,
+              openInterestShort: 0,
+              maxLeverage: 50,
+            })}
+            className={"flex items-center gap-2 px-3 py-1.5 rounded-md transition-all duration-150 shrink-0 " +
+              (isSelected ? "bg-muted border border-border" : "hover:bg-muted/50 border border-transparent")}
+          >
+            <span className="text-xs font-display font-600 text-ivory">{m.symbol}/USD</span>
+            {ticker && (
+              <>
+                <span className="text-xs font-mono text-ghost">
+                  ${ticker.price < 10 ? ticker.price.toFixed(3) : ticker.price.toFixed(2)}
+                </span>
+                <span className={"text-[11px] font-mono " + (isPositive ? "text-positive" : "text-negative")}>
+                  {isPositive ? "+" : ""}{ticker.changePercent24h.toFixed(2)}%
+                </span>
+              </>
+            )}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+export function TradePage() {
+  const { setMarkets, setSelectedMarket, selectedMarket } = useTradingStore((s) => ({
+    setMarkets: s.setMarkets,
+    setSelectedMarket: s.setSelectedMarket,
+    selectedMarket: s.selectedMarket,
+  }))
+
+  const tickers = useMarketTickers()
+  useLoadPositions()
+
+  useEffect(() => {
+    if (tickers.length === 0) return
+    const markets = ALL_MARKETS.map((m, i) => ({
+      ...m,
+      price: tickers[i]?.price ?? 0,
+      priceChange24h: tickers[i]?.changePercent24h ?? 0,
+      fundingRate: 0.0001,
+      openInterestLong: 0,
+      openInterestShort: 0,
+      maxLeverage: 50,
+    }))
+    setMarkets(markets)
+  }, [tickers])
+
+  return (
+    <div className="h-[calc(100vh-56px)] flex flex-col overflow-hidden animate-fade-in">
+      <LivePriceSync tickers={tickers} />
+      <MarketTickerStrip />
+
+      <div className="flex flex-1 min-h-0">
+        <div className="flex-1 flex flex-col min-w-0 border-r border-border">
+          <div className="flex-1 min-h-0">
+            <PriceChart />
+          </div>
+          <FundingRateBar rate={selectedMarket?.fundingRate ?? 0.0001} />
+          <div className="h-48 border-t border-border flex-shrink-0 overflow-y-auto">
+            <div className="px-4 py-2 border-b border-border">
+              <span className="text-xs font-display font-600 text-ghost uppercase tracking-wider">Open Positions</span>
+            </div>
+            <OpenPositions />
+          </div>
+        </div>
+
+        <div className="w-80 flex-shrink-0 flex flex-col bg-panel">
+          <div className="px-4 py-3 border-b border-border flex-shrink-0">
+            <span className="text-xs font-display font-600 text-ghost uppercase tracking-wider">Place Order</span>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            <OrderForm />
+          </div>
+          <div className="p-3 border-t border-border flex-shrink-0">
+            <ProofStatus />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,26 @@
+# RPC URLs
+BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
+BASE_MAINNET_RPC_URL=https://mainnet.base.org
+
+# Deployer
+PRIVATE_KEY=0x34756960a1bb90e67540cf4bbcad5ec97f219044dd94b020e96d4665adfe9077
+
+# API Keys
+BASESCAN_API_KEY=KBDNHD2GWQ2UCMFE5F7WA4G9X1IXDVE6YD
+
+# Contracts (filled after deployment)
+MOCK_USDC_ADDRESS=
+PRICE_ORACLE_ADDRESS=
+VAULT_ADDRESS=
+POSITION_MANAGER_ADDRESS=
+LIQUIDATION_ENGINE_ADDRESS=
+PRIVATE_PERPS_ADDRESS=
+
+# Arcium
+ARCIUM_PROGRAM_ID=your_arcium_program_id
+ARCIUM_CLUSTER_URL=https://devnet.arcium.com
+
+
+
+forge script script/DeployTestnet.s.sol --rpc-url https://sepolia.base.org --broadcast --private-key $(grep PRIVATE_KEY .env | cut -d '=' -f2)
+

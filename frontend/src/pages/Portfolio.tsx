@@ -28,7 +28,7 @@ export function PortfolioPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 space-y-4 animate-fade-in">
+    <div className="max-w-5xl mx-auto px-3 md:px-4 py-4 md:py-6 space-y-3 md:space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-display font-600 text-ivory">Portfolio</h1>
         <div className="flex items-center gap-1.5 text-xs font-mono text-dim">
@@ -37,7 +37,6 @@ export function PortfolioPage() {
         </div>
       </div>
 
-      {/* PnL Summary */}
       <PnLDisplay />
 
       {/* Tabs */}

@@ -4,7 +4,12 @@
 
 @layer base {
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
+  html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+body {
     background-color: #08090A;
     color: #E8E6E1;
     font-family: 'DM Sans', sans-serif;
@@ -14,6 +19,11 @@
   ::-webkit-scrollbar-track { background: #0E1012; }
   ::-webkit-scrollbar-thumb { background: #2A2F36; border-radius: 2px; }
   ::selection { background: rgba(139, 92, 246, 0.3); color: #E8E6E1; }
+
+  /* Remove number input spinner arrows */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
 }
 
 @layer components {

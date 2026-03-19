@@ -56,6 +56,7 @@ export function PriceChart() {
         timeVisible: true,
         secondsVisible: false,
       },
+      autoSize: false,
       handleScroll: true,
       handleScale: true,
     });
@@ -100,7 +101,8 @@ export function PriceChart() {
       close: c.close,
     }));
     candleSeriesRef.current.setData(data);
-    chartRef.current?.timeScale().fitContent();
+    chartRef.current?.timeScale().fitContent()
+    candleSeriesRef.current?.applyOptions({ priceFormat: { type: 'price', precision: 4, minMove: 0.0001 } });
   }, [candles]);
 
   const isPositive = (ticker?.changePercent24h ?? 0) >= 0;
@@ -153,7 +155,7 @@ export function PriceChart() {
       </div>
 
       {/* Chart canvas */}
-      <div ref={chartContainerRef} className="flex-1 min-h-0" />
+      <div ref={chartContainerRef} className="w-full h-full" style={{ overflow: "hidden" }} />
     </div>
   );
 }

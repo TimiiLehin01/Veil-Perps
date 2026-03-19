@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Environment files (NEVER commit these)
+.env
+contracts/.env
+frontend/.env
+
+# Build outputs
+frontend/dist/
+contracts/out/
+contracts/cache/
+
+# Foundry
+contracts/broadcast/
+
+# OS
+.DS_Store
+*.swp
