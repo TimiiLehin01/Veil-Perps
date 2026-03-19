@@ -8,8 +8,10 @@ import { useTradingStore } from '@/store/tradingStore'
 import { useMarketTickers } from '@/hooks/usePriceData'
 import { useLoadPositions } from '@/hooks/usePosition'
 import { ALL_MARKETS } from '@/pages/Markets'
-import { BarChart2, Briefcase, Shield, LayoutGrid } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
+import { BarChart2, Briefcase, Shield } from 'lucide-react'
+import { registerTradeTabSetter } from '@/components/Layout/MobileNav'
+
+type MobileTab = 'chart' | 'trade' | 'positions'
 
 function LivePriceSync({ tickers }: { tickers: any[] }) {
   const selectedMarket = useTradingStore((s) => s.selectedMarket)
@@ -49,7 +51,6 @@ function MarketTickerStrip({ tickers }: { tickers: any[] }) {
     el.addEventListener('mouseleave', resume)
     return () => { cancelAnimationFrame(frame) }
   }, [tickers.length])
-
   const items = [...ALL_MARKETS, ...ALL_MARKETS]
   return (
     <div ref={stripRef} className="flex items-center gap-1 px-3 py-2 border-b border-border bg-surface flex-shrink-0 overflow-x-hidden" style={{ scrollbarWidth: 'none' }}>
@@ -74,16 +75,16 @@ function MarketTickerStrip({ tickers }: { tickers: any[] }) {
   )
 }
 
-interface TradePageProps {
-  mobileTab: 'chart' | 'trade' | 'positions'
-  setMobileTab: (tab: 'chart' | 'trade' | 'positions') => void
-}
-
-export function TradePage({ mobileTab, setMobileTab }: TradePageProps) {
+export function TradePage() {
   const { setMarkets, setSelectedMarket, selectedMarket } = useTradingStore((s) => ({ setMarkets: s.setMarkets, setSelectedMarket: s.setSelectedMarket, selectedMarket: s.selectedMarket }))
   const openPositions = useTradingStore((s) => s.positions.filter(p => p.status === 'OPEN'))
+  const [mobileTab, setMobileTab] = useState<MobileTab>('chart')
   const tickers = useMarketTickers()
   useLoadPositions()
+
+  useEffect(() => {
+    registerTradeTabSetter(setMobileTab)
+  }, [setMobileTab])
 
   useEffect(() => {
     if (tickers.length === 0) return
@@ -92,11 +93,9 @@ export function TradePage({ mobileTab, setMobileTab }: TradePageProps) {
     if (!selectedMarket) setSelectedMarket(markets[0])
   }, [tickers])
 
-  const priceDisplay = selectedMarket?.price
-    ? `$${selectedMarket.price < 10 ? selectedMarket.price.toFixed(3) : selectedMarket.price.toFixed(2)}`
-    : '—'
-  const changeDisplay = `${(selectedMarket?.priceChange24h ?? 0) >= 0 ? '+' : ''}${(selectedMarket?.priceChange24h ?? 0).toFixed(2)}%`
+  const priceDisplay = selectedMarket?.price ? `$${selectedMarket.price < 10 ? selectedMarket.price.toFixed(3) : selectedMarket.price.toFixed(2)}` : '—'
   const changeColor = (selectedMarket?.priceChange24h ?? 0) >= 0 ? 'text-positive' : 'text-negative'
+  const changeDisplay = `${(selectedMarket?.priceChange24h ?? 0) >= 0 ? '+' : ''}${(selectedMarket?.priceChange24h ?? 0).toFixed(2)}%`
 
   return (
     <div className="h-[calc(100vh-56px)] flex flex-col overflow-hidden animate-fade-in">
@@ -127,19 +126,17 @@ export function TradePage({ mobileTab, setMobileTab }: TradePageProps) {
       {/* MOBILE */}
       <div className="flex md:hidden flex-col flex-1 min-h-0">
         <div className="flex-1 min-h-0 overflow-hidden">
-
           {mobileTab === 'chart' && (
             <div className="h-full flex flex-col">
               <div className="flex items-center gap-3 px-3 py-2 border-b border-border bg-surface flex-shrink-0">
                 <span className="font-display font-600 text-ivory text-sm">{selectedMarket?.symbol ?? 'ETH'}/USD</span>
-                <span className="font-mono text-ivory text-sm font-500">{priceDisplay}</span>
+                <span className="font-mono text-ivory text-sm">{priceDisplay}</span>
                 <span className={`text-xs font-mono ${changeColor}`}>{changeDisplay}</span>
               </div>
               <div className="flex-1 min-h-0"><PriceChart /></div>
               <FundingRateBar rate={selectedMarket?.fundingRate ?? 0.0001} />
             </div>
           )}
-
           {mobileTab === 'trade' && (
             <div className="h-full flex flex-col bg-panel">
               <div className="px-4 py-3 border-b border-border flex-shrink-0 flex items-center justify-between">
@@ -152,7 +149,6 @@ export function TradePage({ mobileTab, setMobileTab }: TradePageProps) {
               <div className="flex-1 min-h-0 overflow-y-auto"><OrderForm /></div>
             </div>
           )}
-
           {mobileTab === 'positions' && (
             <div className="h-full overflow-y-auto">
               <div className="px-4 py-3 border-b border-border flex items-center justify-between">
@@ -164,26 +160,25 @@ export function TradePage({ mobileTab, setMobileTab }: TradePageProps) {
           )}
         </div>
 
-        {/* Bottom Tab Bar */}
+        {/* Mobile tab bar — Chart, Trade, Positions only (Portfolio+Markets in global MobileNav) */}
         <div className="flex-shrink-0 border-t border-border bg-surface grid grid-cols-3">
           {([
-            { key: 'chart' as MobileTab, icon: BarChart2, label: 'Chart', to: null },
-            { key: 'trade' as MobileTab, icon: Shield, label: 'Trade', to: null },
-            { key: 'positions' as MobileTab, icon: Briefcase, label: 'Positions', to: null },
+            { key: 'chart' as MobileTab, icon: BarChart2, label: 'Chart' },
+            { key: 'trade' as MobileTab, icon: Shield, label: 'Trade' },
+            { key: 'positions' as MobileTab, icon: Briefcase, label: 'Positions' },
           ]).map(({ key, icon: Icon, label }) => (
             <button key={key} onClick={() => setMobileTab(key)}
-              className={`flex flex-col items-center gap-1 py-3 text-[11px] font-display font-600 transition-all relative ${mobileTab === key ? 'text-ivory' : 'text-dim'}`}>
+              className={`flex flex-col items-center gap-1 py-2.5 text-[10px] font-display font-600 transition-all relative ${mobileTab === key ? 'text-ivory' : 'text-dim'}`}>
               {mobileTab === key && <span className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-arcium-400 rounded-full" />}
-              <Icon size={17} className={mobileTab === key ? 'text-arcium-400' : ''} />
+              <Icon size={16} className={mobileTab === key ? 'text-arcium-400' : ''} />
               {label}
               {key === 'positions' && openPositions.length > 0 && (
-                <span className="absolute top-2 right-3 w-4 h-4 rounded-full bg-arcium-500 text-[9px] text-white flex items-center justify-center">
+                <span className="absolute top-1.5 right-5 w-3.5 h-3.5 rounded-full bg-arcium-500 text-[8px] text-white flex items-center justify-center">
                   {openPositions.length}
                 </span>
               )}
             </button>
           ))}
-
         </div>
       </div>
     </div>

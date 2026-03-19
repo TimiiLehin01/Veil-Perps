@@ -132,6 +132,7 @@ export function usePriceData(symbol: string) {
         })
         .catch(() => {
           setTicker((prev) => {
+            if (!prev) return generateFallbackTicker(symbol)
             const change = (Math.random() - 0.49) * prev.price * 0.001
             const newPrice = parseFloat((prev.price + change).toFixed(4))
             setCandles((c) => {

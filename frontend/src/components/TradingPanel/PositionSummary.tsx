@@ -1,6 +1,6 @@
 import { Lock } from "lucide-react";
 import { useTradingStore } from "@/store/tradingStore";
-import { formatUSDC, formatPrice, parseUSDC } from "@/lib/formatters";
+import { formatUSDC, formatPrice } from "@/lib/formatters";
 
 export function PositionSummary() {
   const { leverage, collateralInput, selectedMarket, side } = useTradingStore(

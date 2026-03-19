@@ -29,7 +29,7 @@ export function generateCommitmentHash(
 
   position: PositionData,
 
-  trader: `0x${string}`,
+  _trader: `0x${string}`,
 
   salt: `0x${string}`
 
@@ -113,9 +113,9 @@ export async function submitToArciumMXE(
 
 export async function requestArciumPnLComputation(
 
-  positionId: `0x${string}`,
+  _positionId: `0x${string}`,
 
-  currentPrice: bigint
+  _currentPrice: bigint
 
 ): Promise<{ pnl: bigint; proof: `0x${string}` }> {
 
@@ -129,11 +129,11 @@ export async function requestArciumPnLComputation(
 
 export async function checkLiquidatable(
 
-  positionId: `0x${string}`,
+  _positionId: `0x${string}`,
 
-  trader: `0x${string}`,
+  _trader: `0x${string}`,
 
-  currentPrice: bigint
+  _currentPrice: bigint
 
 ): Promise<{ isLiquidatable: boolean; proof: `0x${string}` | null }> {
 
@@ -143,7 +143,7 @@ export async function checkLiquidatable(
 
 }
 
-export function encryptPositionData(position: PositionData, arciumPublicKey: string): string {
+export function encryptPositionData(position: PositionData, _arciumPublicKey: string): string {
 
   const data = JSON.stringify({
 
